@@ -6,7 +6,7 @@
 
 ```sh
 cd <work>
-git clone <this repo>
+git clone git@github.com:drom/aerostat.git
 cd aerostat
 npm i
 cd <music folder>
