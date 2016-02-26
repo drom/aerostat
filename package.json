@@ -1,0 +1,28 @@
+{
+  "name": "aerostat",
+  "version": "0.0.1",
+  "description": "Aerostat Radio podcast download tool",
+  "main": "index.js",
+  "scripts": {
+    "test": "eslint **/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drom/aerostat.git"
+  },
+  "keywords": [
+    "aerostat"
+  ],
+  "author": "Aliaksei Chapyzhenka",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/drom/aerostat/issues"
+  },
+  "homepage": "https://github.com/drom/aerostat#readme",
+  "dependencies": {
+    "yargs": "^4.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^2.2.0"
+  }
+}

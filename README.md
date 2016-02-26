@@ -17,5 +17,5 @@ Download range of episodes. From <min> to <max>
 
 ```sh
 cd <music folder>
-<work>/aerostat/bin/aerostat.js --min 496 --max 535
+<work>/aerostat/bin/download.js --min 496 --max 535
 ```
