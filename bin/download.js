@@ -7,7 +7,9 @@ var fs = require('fs'),
     yargs = require('yargs');
 
 function getFileName (i) {
-    return 'Boris%20Grebenshchikov%20-%20Aerostat%20Radio%20vol.' + i + '.mp3'
+    return 'Boris%20'
+        + ((i < 284) ? 'Grebentshikov' : 'Grebenshchikov')
+        + '%20-%20Aerostat%20Radio%20vol.' + i + '.mp3';
 }
 
 function getUrl (i) {
