@@ -23,6 +23,7 @@
     "yargs": "^4.2.0"
   },
   "devDependencies": {
+    "chromecasts": "^1.9.0",
     "eslint": "^2.2.0"
   }
 }
