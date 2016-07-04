@@ -16,8 +16,16 @@ chromecasts().on('update', function (player) {
         player.play(
             url,
             {type: 'audio/x-mp3'},
-            function (err) {
-                console.log(err);
+            function (stat1) {
+                console.log(stat1);
+                if (argv.skip) {
+                    player.seek(
+                        Number(argv.skip),
+                        function (stat2) {
+                            console.log(stat2);
+                        }
+                    );
+                }
             }
         );
     }
