@@ -41,7 +41,20 @@ function getFiles(min, max) {
     rec();
 }
 
-var argv = yargs.argv;
+var argv = yargs
+    .usage('$0 [args]')
+    .option('min', {
+        demand: true,
+        describe: 'first Aerostat number to download',
+        type: 'number'
+    })
+    .option('max', {
+        demand: true,
+        describe: 'last Aerostat number to download',
+        type: 'number'
+    })
+    .help('help')
+    .argv;
 
 if (argv.min !== undefined && argv.max !== undefined) {
     getFiles(argv.min, argv.max);
