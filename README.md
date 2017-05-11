@@ -1,6 +1,6 @@
 # aerostat
 
-Little tool chain to deal with amazing [aerostat](http://www.aquarium.ru/misc/aerostat/) radio podcast http://aerostatica.ru/.
+Little tool chain to deal with amazing [aerostat](http://aerostatica.ru/) radio podcast.
 
 ## Install
 
