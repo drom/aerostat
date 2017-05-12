@@ -12,14 +12,18 @@ function getDest (i) {
 }
 
 function download (url, dest, cb) {
-    var file = fs.createWriteStream(dest);
     http.get(url, function(response) {
         process.stdout.write('start:' + dest + '...');
-        response.pipe(file);
-        file.on('finish', function() {
-            file.close(cb);
-            process.stdout.write('done\n');
-        });
+        if (response.statusCode === 200) {
+            var file = fs.createWriteStream(dest);
+            response.pipe(file);
+            file.on('finish', function() {
+                file.close(cb);
+                process.stdout.write('done\n');
+            });
+        } else {
+            process.stdout.write('(' + response.statusCode + ')\n');
+        }
     });
 }
 
@@ -49,7 +53,8 @@ var argv = yargs
         type: 'number'
     })
     .option('max', {
-        demand: true,
+        demand: false,
+        default: 5000,
         describe: 'last Aerostat number to download',
         type: 'number'
     })
