@@ -4,6 +4,7 @@
 var fs = require('fs'),
     path = require('path'),
     http = require('http'),
+    https = require('https'),
     lib = require('../lib'),
     yargs = require('yargs');
 
@@ -12,7 +13,8 @@ function getDest (i) {
 }
 
 function download (url, dest, cb) {
-    http.get(url, function(response) {
+    var type = url.slice(0, 5);
+    ({ http: http, https: https })[type].get(url, function (response) {
         process.stdout.write('start:' + dest + '...');
         if (response.statusCode === 200) {
             var file = fs.createWriteStream(dest);
