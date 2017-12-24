@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/drom/aerostat#readme",
   "devDependencies": {
+    "async": "^2.6.0",
     "chromecasts": "^1.9.0",
     "eslint": "^4.5.0",
     "yargs": "^8.0.2"
