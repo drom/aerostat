@@ -14,7 +14,7 @@ function getDest (i) {
 
 function download (url, dest, cb) {
     var type = url.slice(0, 5);
-    ({ http: http, https: https })[type].get(url, function (response) {
+    ({ 'http:': http, https: https })[type].get(url, function (response) {
         process.stdout.write('start:' + dest + '...');
         if (response.statusCode === 200) {
             var file = fs.createWriteStream(dest);
