@@ -9,7 +9,7 @@ var fs = require('fs'),
     yargs = require('yargs');
 
 function getDest (i) {
-    return path.resolve(process.cwd(), './a' + ('00000' + i).slice(-4) + '.mp3');
+    return path.resolve(process.cwd(), './' + lib.getFileName(i));
 }
 
 function download (url, dest, cb) {
