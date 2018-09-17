@@ -32,13 +32,13 @@ function download (index, cb) {
     });
 }
 
-function getFiles(min, max) {
+function getFiles(min, max, par) {
     var arr = [];
     var i;
     for (i = min; i <= max; i++) {
         arr.push(i);
     }
-    eachLimit(arr, 10, download, function (err) {
+    eachLimit(arr, par, download, function (err) {
         if (err) {
             throw err;
         }
@@ -64,9 +64,15 @@ var argv = yargs
         describe: 'last Aerostat number to download',
         type: 'number'
     })
+    .option('par', {
+        demand: false,
+        default: 1,
+        describe: 'number of parallel downloads',
+        type: 'number'
+    })
     .help('help')
     .argv;
 
 if (argv.min !== undefined && argv.max !== undefined) {
-    getFiles(argv.min, argv.max);
+    getFiles(argv.min, argv.max, argv.par);
 }
