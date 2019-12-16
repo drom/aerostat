@@ -1,5 +1,5 @@
 {
-  "name": "аэростат",
+  "name": "radio-aerostat",
   "version": "1.4.0",
   "description": "Aerostat Radio podcast download tool",
   "main": "index.js",
