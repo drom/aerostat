@@ -1,10 +1,6 @@
-# aerostat
+Маленький скриптец для скачки замечательной радиопередачи [АЭРОСТАТ](http://www.aquarium.ru/misc/aerostat/) Бориса Гребенщикова.
 
-Little tool download an amazing [aerostat](http://aerostatica.ru/) radio podcast.
-
-## Usage
-
-### Download range of episodes into current folder.
+## Скачать ряд эпизодов в текущую папку
 
 ```sh
 npx aerostat-dl --min 496 --max 535
@@ -13,7 +9,7 @@ npx aerostat-dl --min 496 --max 535
 * `--min Number` start downloading with this number
 * `--max Number` last episode to download
 
-### Play on Aerostat on chromecast device.
+## Играть эпизод через Chromecast
 
 ```sh
 npx aerostat-dl --number 100 --device <myChromeCastDeviceName>
