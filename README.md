@@ -2,41 +2,33 @@
 
 Little tool chain to deal with amazing [aerostat](http://aerostatica.ru/) radio podcast.
 
-## Install
-
-```sh
-cd <work>
-git clone git@github.com:drom/aerostat.git
-cd aerostat
-npm i
-```
-
 ## Usage
 
-### download
-
-Download range of episodes into current folder.
-
-#### Options:
-
-  * `--min Number` start downloading with this number
-  * `--max Number` last episode to download
+### Download range of episodes into current folder.
 
 ```sh
-cd <music folder>
-<work>/aerostat/bin/download.js --min 496 --max 535
+npx aero-stat --min 496 --max 535
 ```
 
-### chromecast
+* `--min Number` start downloading with this number
+* `--max Number` last episode to download
 
-Play on Aerostat on chromecast device.
-
-#### Options:
-
-  * `--number Number` Aerostat Track number
-  * `--device String` Chromecast device name
-  * `--skip Number` Skip first N seconds of podcast (~35 sec is an intro.)
+### Play on Aerostat on chromecast device.
 
 ```sh
-<work>/aerostat/bin/chromecast.js --number 496 --device <myChromeCastDeviceName>
+npx aero-stat --number 100 --device <myChromeCastDeviceName>
+```
+
+### Options
+
+```
+Options:
+  --version     Show version number                                    [boolean]
+  --min         first Aerostat number to download                       [number]
+  --max         last Aerostat number to download        [number] [default: 5000]
+  --par         number of parallel downloads               [number] [default: 1]
+  --number, -n  Aerostat Number to chromecast                           [number]
+  --device, -d  Name of chromecast device                               [string]
+  --skip, -s    skip Number of seconds
+  --help        Show help                                              [boolean]
 ```

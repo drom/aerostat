@@ -1,5 +1,5 @@
 {
-  "name": "radio-aerostat",
+  "name": "aero-stat",
   "version": "1.4.0",
   "description": "Aerostat Radio podcast download tool",
   "main": "index.js",
@@ -23,9 +23,9 @@
   },
   "homepage": "https://github.com/drom/aerostat#readme",
   "dependencies": {
-    "async": "^2.6.0",
+    "async": "^3.1.0",
     "chromecasts": "^1.9.0",
-    "eslint": "^4.5.0",
-    "yargs": "^8.0.2"
+    "eslint": "^4.19.1",
+    "yargs": "^14.2.2"
   }
 }
