@@ -3,6 +3,9 @@
   "version": "1.4.0",
   "description": "Aerostat Radio podcast download tool",
   "main": "index.js",
+  "bin": {
+    "download": "bin/download.js"
+  },
   "scripts": {
     "test": "eslint **/*.js"
   },
@@ -19,7 +22,7 @@
     "url": "https://github.com/drom/aerostat/issues"
   },
   "homepage": "https://github.com/drom/aerostat#readme",
-  "devDependencies": {
+  "dependencies": {
     "async": "^2.6.0",
     "chromecasts": "^1.9.0",
     "eslint": "^4.5.0",
