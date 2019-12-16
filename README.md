@@ -1,13 +1,13 @@
 # aerostat
 
-Little tool chain to deal with amazing [aerostat](http://aerostatica.ru/) radio podcast.
+Little tool download an amazing [aerostat](http://aerostatica.ru/) radio podcast.
 
 ## Usage
 
 ### Download range of episodes into current folder.
 
 ```sh
-npx aero-stat --min 496 --max 535
+npx aerostat-dl --min 496 --max 535
 ```
 
 * `--min Number` start downloading with this number
@@ -16,7 +16,7 @@ npx aero-stat --min 496 --max 535
 ### Play on Aerostat on chromecast device.
 
 ```sh
-npx aero-stat --number 100 --device <myChromeCastDeviceName>
+npx aerostat-dl --number 100 --device <myChromeCastDeviceName>
 ```
 
 ### Options
