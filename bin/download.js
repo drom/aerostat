@@ -16,6 +16,10 @@ function getDest (i) {
 
 function download (index, cb) {
     var url = lib.getUrl(index);
+    if (url === undefined) {
+      cb();
+      return;
+    }
     var dest = getDest(index);
     var type = url.slice(0, 5);
     ({ 'http:': http, https: https })[type].get(url, function (response) {
@@ -46,8 +50,9 @@ function getFiles(min, max, par) {
         if (i === max) {
             console.log('all done');
         } else {
-            i++;
-            rec();
+            console.log('done');
+            // i++;
+            // rec();
         }
     });
 }
