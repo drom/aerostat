@@ -16,6 +16,7 @@ function getDest (i) {
 
 function download (index, cb) {
     var url = lib.getUrl(index);
+    console.log(url);
     if (url === undefined) {
       cb();
       return;
