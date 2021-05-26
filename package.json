@@ -1,6 +1,6 @@
 {
   "name": "aerostat-dl",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Aerostat Radio podcast download tool",
   "main": "index.js",
   "bin": {
