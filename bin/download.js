@@ -2,10 +2,89 @@
 'use strict';
 
 const fs = require('node:fs');
-const { Readable } = require('node:stream');
+const path = require('node:path');
+const { Readable, Transform } = require('node:stream');
 const { pipeline } = require('node:stream/promises');
 
 const lib = require('../lib');
+
+function fmtMB(bytes) {
+  return (bytes / 1048576).toFixed(1);
+}
+
+function bar(state) {
+  const width = 24;
+  const total = state.total;
+  const ratio = total ? Math.min(1, state.received / total) : 0;
+  const filled = Math.round(ratio * width);
+  const graph = '#'.repeat(filled) + '-'.repeat(width - filled);
+  const pct = total ? (Math.round(ratio * 100) + '%').padStart(4) : '  ?%';
+  const size = total
+    ? fmtMB(state.received) + '/' + fmtMB(total) + ' MB'
+    : fmtMB(state.received) + ' MB';
+  return state.name + ' [' + graph + '] ' + pct + '  ' + size;
+}
+
+// Live multi-line renderer: one bar per download slot on a TTY, plain log lines otherwise.
+function makeRenderer(width) {
+  const tty = process.stdout.isTTY;
+  const slots = new Array(width).fill(null);
+  let drawn = 0;
+  let last = 0;
+
+  function clear() {
+    if (drawn > 0) {
+      process.stdout.write('\x1b[' + drawn + 'A');
+    }
+    process.stdout.write('\x1b[J');
+    drawn = 0;
+  }
+
+  function draw() {
+    let out = '';
+    let n = 0;
+    for (const s of slots) {
+      if (s) {
+        out += bar(s) + '\n';
+        n++;
+      }
+    }
+    process.stdout.write(out);
+    drawn = n;
+  }
+
+  return {
+    log(msg) {
+      if (!tty) {
+        process.stdout.write(msg + '\n');
+        return;
+      }
+      clear();
+      process.stdout.write(msg + '\n');
+      draw();
+    },
+    update(slot, state, force) {
+      slots[slot] = state;
+      if (!tty) {
+        return;
+      }
+      const now = Date.now();
+      if (!force && now - last < 80) {
+        return;
+      }
+      last = now;
+      clear();
+      draw();
+    },
+    clearSlot(slot) {
+      slots[slot] = null;
+      if (tty) {
+        clear();
+        draw();
+      }
+    }
+  };
+}
 
 const HELP = [
   'Usage: aerostat-dl [args]',
@@ -42,19 +121,40 @@ function parseArgs(argv) {
   return opts;
 }
 
-function download(src, dst) {
+// resolves true when the episode is missing (404) => caller should stop
+function download(i, slot, render) {
+  const src = lib.getUrl(i);
+  const dst = lib.getDest(i);
+  const name = path.basename(dst);
   return fetch(src).then(function (res) {
-    if (!res.ok) {
-      process.stdout.write('(' + res.status + ') ' + src + '\n');
-      return;
+    if (res.status === 404) {
+      render.log('(404) ' + name);
+      return true;
     }
-    process.stdout.write('start: ' + dst + '\n');
-    return pipeline(Readable.fromWeb(res.body), fs.createWriteStream(dst))
+    if (!res.ok) {
+      render.log('(' + res.status + ') ' + name);
+      return false;
+    }
+    const total = Number(res.headers.get('content-length')) || 0;
+    let received = 0;
+    render.update(slot, { name, received, total }, true);
+    const count = new Transform({
+      transform(chunk, enc, cb) {
+        received += chunk.length;
+        render.update(slot, { name, received, total });
+        cb(null, chunk);
+      }
+    });
+    return pipeline(Readable.fromWeb(res.body), count, fs.createWriteStream(dst))
       .then(function () {
-        process.stdout.write('done: ' + dst + '\n');
+        render.clearSlot(slot);
+        render.log('done: ' + name + ' (' + fmtMB(received) + ' MB)');
+        return false;
       });
   }).catch(function (err) {
-    process.stdout.write('error: ' + dst + ' (' + err.message + ')\n');
+    render.clearSlot(slot);
+    render.log('error: ' + name + ' (' + err.message + ')');
+    return false;
   });
 }
 
@@ -63,18 +163,26 @@ function getFiles(min, max, par) {
   for (let i = min; i <= max; i++) {
     nums.push(i);
   }
+  const width = Math.max(1, par);
+  const render = makeRenderer(width);
   let idx = 0;
-  function worker() {
-    if (idx >= nums.length) {
+  let stopped = false;
+  function worker(slot) {
+    if (stopped || idx >= nums.length) {
       return Promise.resolve();
     }
     const i = nums[idx++];
-    return download(lib.getUrl(i), lib.getDest(i)).then(worker);
+    return download(i, slot, render).then(function (stop) {
+      if (stop) {
+        stopped = true;
+        return;
+      }
+      return worker(slot);
+    });
   }
   const runners = [];
-  const width = Math.max(1, par);
   for (let w = 0; w < width; w++) {
-    runners.push(worker());
+    runners.push(worker(w));
   }
   Promise.all(runners).then(function () {
     console.log('all done');
