@@ -1,133 +1,97 @@
 #!/usr/bin/env node
 'use strict';
 
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
-
-const eachLimit = require('async/eachLimit');
-const chromecasts = require('chromecasts');
-const yargs = require('yargs');
+const fs = require('node:fs');
+const { Readable } = require('node:stream');
+const { pipeline } = require('node:stream/promises');
 
 const lib = require('../lib');
 
-function download ({src, dst}, cb) {
-  console.log(src);
-  if (src === undefined) {
-    cb();
-    return;
+const HELP = [
+  'Usage: aerostat-dl [args]',
+  '',
+  'Options:',
+  '  --min <n>   first Aerostat number to download          [number]',
+  '  --max <n>   last Aerostat number to download   [number] [default: 5000]',
+  '  --par <n>   number of concurrent downloads        [number] [default: 1]',
+  '  --help      show help',
+  ''
+].join('\n');
+
+function parseArgs(argv) {
+  const opts = { max: 5000, par: 1 };
+  for (let i = 0; i < argv.length; i++) {
+    let key = argv[i];
+    let val;
+    const eq = key.indexOf('=');
+    if (key.startsWith('--') && eq !== -1) {
+      val = key.slice(eq + 1);
+      key = key.slice(0, eq);
+    }
+    switch (key) {
+    case '--min': opts.min = Number(val !== undefined ? val : argv[++i]); break;
+    case '--max': opts.max = Number(val !== undefined ? val : argv[++i]); break;
+    case '--par': opts.par = Number(val !== undefined ? val : argv[++i]); break;
+    case '--help':
+    case '-h': opts.help = true; break;
+    default:
+      process.stderr.write('unknown option: ' + key + '\n');
+      opts.help = true;
+    }
   }
-  var type = src.slice(0, 5);
-  ({ 'http:': http, https: https })[type].get(src, function (response) {
+  return opts;
+}
+
+function download(src, dst) {
+  return fetch(src).then(function (res) {
+    if (!res.ok) {
+      process.stdout.write('(' + res.status + ') ' + src + '\n');
+      return;
+    }
     process.stdout.write('start: ' + dst + '\n');
-    if (response.statusCode === 200) {
-      var file = fs.createWriteStream(dst);
-      response.pipe(file);
-      file.on('finish', function() {
-        file.close(cb);
+    return pipeline(Readable.fromWeb(res.body), fs.createWriteStream(dst))
+      .then(function () {
         process.stdout.write('done: ' + dst + '\n');
       });
-    } else {
-      process.stdout.write('(' + response.statusCode + ')\n');
-    }
+  }).catch(function (err) {
+    process.stdout.write('error: ' + dst + ' (' + err.message + ')\n');
   });
 }
 
 function getFiles(min, max, par) {
-  var arr = [];
-  var i;
-  for (i = min; i <= max; i++) {
-    arr.push({
-    //   src: lib.getArtUrl(i),
-    //   dst: lib.getArtDest(i)
-    // }, {
-      src: lib.getUrl(i),
-      dst: lib.getDest(i)
-    });
+  const nums = [];
+  for (let i = min; i <= max; i++) {
+    nums.push(i);
   }
-  eachLimit(arr, par, download, function (err) {
-    if (err) {
-      throw err;
+  let idx = 0;
+  function worker() {
+    if (idx >= nums.length) {
+      return Promise.resolve();
     }
-    if (i === max) {
-      console.log('all done');
-    } else {
-      console.log('done');
-      // i++;
-      // rec();
-    }
+    const i = nums[idx++];
+    return download(lib.getUrl(i), lib.getDest(i)).then(worker);
+  }
+  const runners = [];
+  const width = Math.max(1, par);
+  for (let w = 0; w < width; w++) {
+    runners.push(worker());
+  }
+  Promise.all(runners).then(function () {
+    console.log('all done');
   });
 }
 
-const main = async () => {
-  var argv = yargs
-    .usage('$0 [args]')
-    .option('min', {
-      demand: false,
-      describe: 'first Aerostat number to download',
-      type: 'number'
-    })
-    .option('max', {
-      demand: false,
-      default: 5000,
-      describe: 'last Aerostat number to download',
-      type: 'number'
-    })
-    .option('par', {
-      demand: false,
-      default: 1,
-      describe: 'number of parallel downloads',
-      type: 'number'
-    })
-    .option('number', {
-      alias: 'n',
-      demand: false,
-      describe: 'Aerostat Number to chromecast',
-      type: 'number'
-    })
-    .option('device', {
-      alias: 'd',
-      demand: false,
-      describe: 'Name of chromecast device',
-      type: 'string'
-    })
-    .options('skip', {
-      alias: 's',
-      describe: 'skip Number of seconds'
-    })
-    .help('help')
-    .argv;
-  
-  if (argv.min !== undefined && argv.max !== undefined) {
-    getFiles(argv.min, argv.max, argv.par);
+function main() {
+  const opts = parseArgs(process.argv.slice(2));
+  if (opts.help) {
+    process.stdout.write(HELP);
+    return;
   }
-  
-  if (argv.number !== undefined && argv.device !== undefined) {
-  
-    chromecasts().on('update', function (player) {
-      var url;
-      console.log('found: ' + player.name);
-      if (player.name === argv.device) {
-        url = lib.getUrl(argv.number);
-        player.play(
-          url,
-          {type: 'audio/x-mp3'},
-          function (err1) {
-            if (err1) { throw err1; }
-            if (argv.skip) {
-              player.seek(
-                Number(argv.skip),
-                function (err2) {
-                  if (err2) { throw err2; }
-                }
-              );
-            }
-          }
-        );
-      }
-    });
-  
+  if (opts.min !== undefined) {
+    getFiles(opts.min, opts.max, opts.par);
+  } else {
+    process.stdout.write(HELP);
   }
-};
+}
 
 main();
